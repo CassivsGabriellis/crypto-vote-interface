@@ -10,9 +10,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var db *sql.DB
-
-func init() {
+func initializeDB() (*sql.DB, error) {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -26,12 +24,15 @@ func init() {
 
 	dbSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 
-	db, err = sql.Open("mysql", dbSource)
+	db, err := sql.Open("mysql", dbSource)
 	if err != nil {
-		log.Fatal("Error connecting to the database: ", err)
+		return nil, err
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Fatal("Error pinging the database: ", err)
+		db.Close()
+		return nil, err
 	}
+
+	return db, nil
 }
