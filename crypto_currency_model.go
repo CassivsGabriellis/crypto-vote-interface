@@ -1,4 +1,4 @@
-package model
+package main
 
 type CryptoCurrency struct {
 	ID         int    `json:"id"`
@@ -7,6 +7,3 @@ type CryptoCurrency struct {
 	DownVote   int    `json:"down_vote"`
 	TotalVotes int    `json:"total_votes"`
 }
-
-// Add any additional methods specific to the CryptoCurrency struct, if needed.
-// For example, you can have a method to validate the CryptoCurrency fields before insertion.

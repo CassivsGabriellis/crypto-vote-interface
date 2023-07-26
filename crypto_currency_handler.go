@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"encoding/json"
@@ -7,8 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
-	"github.com/CassivsGabriellis/crypto-vote-interface/model"
-	"github.com/CassivsGabriellis/crypto-vote-interface/database"
 )
 
 func GetCryptoCurrencyByID(w http.ResponseWriter, r *http.Request) {
