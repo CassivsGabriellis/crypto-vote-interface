@@ -27,12 +27,12 @@ func main() {
 	cryptoService := NewCryptoCurrencyService(db)
 
 	// Register API endpoints with handlers
-	apiRouter.HandleFunc("/cryptocurrencies", cryptoService.GetAllCryptoCurrencies).Methods("GET")
-	apiRouter.HandleFunc("/cryptocurrencies/{id:[0-9]+}", cryptoService.GetCryptoCurrencyByID).Methods("GET")
-	apiRouter.HandleFunc("/cryptocurrencies", cryptoService.CreateCryptoCurrency).Methods("POST")
-	apiRouter.HandleFunc("/cryptocurrencies/{id:[0-9]+}/upvote", cryptoService.UpVoteCryptoCurrency).Methods("PUT")
-	apiRouter.HandleFunc("/cryptocurrencies/{id:[0-9]+}/downvote", cryptoService.DownVoteCryptoCurrency).Methods("PUT")
-	apiRouter.HandleFunc("/cryptocurrencies/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
+	apiRouter.HandleFunc("/cryptovote", cryptoService.GetAllCryptoCurrencies).Methods("GET")
+	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}", cryptoService.GetCryptoCurrencyByID).Methods("GET")
+	apiRouter.HandleFunc("/cryptovote", cryptoService.CreateCryptoCurrency).Methods("POST")
+	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}/upvote", cryptoService.UpVoteCryptoCurrency).Methods("PUT")
+	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}/downvote", cryptoService.DownVoteCryptoCurrency).Methods("PUT")
+	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
 
 	// Start the server
 	serverPort := os.Getenv("SERVER_PORT")

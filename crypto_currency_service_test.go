@@ -1,10 +1,10 @@
 package main
 
 import (
-	//"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -52,6 +52,62 @@ func TestGetAllCryptoCurrencies(t *testing.T) {
 		{ID: 2, Name: "Ethereum", UpVote: 80, DownVote: 10, TotalVotes: 90},
 	}
 	assert.Equal(t, expectedCryptoCurrencies, cryptoCurrencies)
+
+	// Check that all the expected SQL queries were executed
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestGetCryptoCurrencyByID(t *testing.T) {
+	// Create a new mock database and expected result
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	cryptoService := NewCryptoCurrencyService(db)
+
+	cryptoID := 1
+	expectedCrypto := CryptoCurrency{
+		ID:         cryptoID,
+		Name:       "Bitcoin",
+		UpVote:     100,
+		DownVote:   20,
+		TotalVotes: 120,
+	}
+
+	// Set the expectations for the first QueryRow call (count query)
+	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+		WithArgs(cryptoID).
+		WillReturnRows(rowsCount)
+
+	// Set the expectations for the second QueryRow call (get cryptocurrency query)
+	rowsCrypto := sqlmock.NewRows([]string{"id", "name", "up_vote", "down_vote", "total_votes"}).
+		AddRow(expectedCrypto.ID, expectedCrypto.Name, expectedCrypto.UpVote, expectedCrypto.DownVote, expectedCrypto.TotalVotes)
+	mock.ExpectQuery("SELECT id, name, up_vote, down_vote, \\(up_vote \\+ down_vote\\) as total_votes FROM crypto_vote WHERE id=?").
+		WithArgs(cryptoID).
+		WillReturnRows(rowsCrypto)
+
+	// Create a new request and recorder for testing the handler
+	req, err := http.NewRequest("GET", "/v1/cryptovote/"+strconv.Itoa(cryptoID), nil)
+	assert.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+
+	// Set up the router and call the handler
+	r := mux.NewRouter()
+	r.HandleFunc("/v1/cryptovote/{id:[0-9]+}", cryptoService.GetCryptoCurrencyByID).Methods("GET")
+	r.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusOK, rr.Code)
+
+	// Parse the response body into a CryptoCurrency object
+	var actualCrypto CryptoCurrency
+	err = json.Unmarshal(rr.Body.Bytes(), &actualCrypto)
+	assert.NoError(t, err)
+
+	// Check the response content
+	assert.Equal(t, expectedCrypto, actualCrypto)
 
 	// Check that all the expected SQL queries were executed
 	assert.NoError(t, mock.ExpectationsWereMet())
