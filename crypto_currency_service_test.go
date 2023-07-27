@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -280,6 +281,150 @@ func TestVoteCryptoCurrency(t *testing.T) {
 		assert.Equal(t, expectedCryptoDownVote, updatedCrypto)
 	
 		// Check that all the expected SQL queries were executed for downvote
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestDeleteCryptoCurrency(t *testing.T) {
+	t.Run("DeleteExistingCrypto", func(t *testing.T) {
+		// Create a new mock database and expected result
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		cryptoService := NewCryptoCurrencyService(db)
+		cryptoID := 1
+
+		// Set the expectations for the first QueryRow call (count query)
+		rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+		mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnRows(rowsCount)
+
+		// Set the expectations for the Exec call (delete cryptocurrency query)
+		result := sqlmock.NewResult(1, 1) // Rows affected: 1
+		mock.ExpectExec("DELETE FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnResult(result)
+
+		// Create a new request and recorder for testing the handler
+		req, err := http.NewRequest("DELETE", "/v1/cryptovote/"+strconv.Itoa(cryptoID), nil)
+		assert.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		// Set up the router and call the handler
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
+		r.ServeHTTP(rr, req)
+
+		// Check the response status code
+		assert.Equal(t, http.StatusNoContent, rr.Code)
+
+		// Check that all the expected SQL queries were executed
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("DeleteNonExistingCrypto", func(t *testing.T) {
+		// Create a new mock database and expected result
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		cryptoService := NewCryptoCurrencyService(db)
+		cryptoID := 1
+
+		// Set the expectations for the first QueryRow call (count query for non-existing cryptocurrency)
+		rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(0)
+		mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnRows(rowsCount)
+
+		// Create a new request and recorder for testing the handler
+		req, err := http.NewRequest("DELETE", "/v1/cryptovote/"+strconv.Itoa(cryptoID), nil)
+		assert.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		// Set up the router and call the handler
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
+		r.ServeHTTP(rr, req)
+
+		// Check the response status code
+		assert.Equal(t, http.StatusNotFound, rr.Code)
+
+		// Check that all the expected SQL queries were executed
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("DatabaseErrorOnCountQuery", func(t *testing.T) {
+		// Create a new mock database and simulate an error during the count query
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		cryptoService := NewCryptoCurrencyService(db)
+		cryptoID := 1
+
+		// Set the expectations for the first QueryRow call (count query)
+		mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnError(fmt.Errorf("database error"))
+
+		// Create a new request and recorder for testing the handler
+		req, err := http.NewRequest("DELETE", "/v1/cryptovote/"+strconv.Itoa(cryptoID), nil)
+		assert.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		// Set up the router and call the handler
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
+		r.ServeHTTP(rr, req)
+
+		// Check the response status code
+		assert.Equal(t, http.StatusInternalServerError, rr.Code)
+
+		// Check that all the expected SQL queries were executed
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("DatabaseErrorOnDeleteQuery", func(t *testing.T) {
+		// Create a new mock database and simulate an error during the delete query
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+
+		cryptoService := NewCryptoCurrencyService(db)
+		cryptoID := 1
+
+		// Set the expectations for the first QueryRow call (count query)
+		rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+		mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnRows(rowsCount)
+
+		// Set the expectations for the Exec call (delete cryptocurrency query with error)
+		mock.ExpectExec("DELETE FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnError(fmt.Errorf("database error"))
+
+		// Create a new request and recorder for testing the handler
+		req, err := http.NewRequest("DELETE", "/v1/cryptovote/"+strconv.Itoa(cryptoID), nil)
+		assert.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		// Set up the router and call the handler
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
+		r.ServeHTTP(rr, req)
+
+		// Check the response status code
+		assert.Equal(t, http.StatusInternalServerError, rr.Code)
+
+		// Check that all the expected SQL queries were executed
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
