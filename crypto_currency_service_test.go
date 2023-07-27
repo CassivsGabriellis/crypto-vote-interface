@@ -156,11 +156,11 @@ func TestCreateCryptoCurrency(t *testing.T) {
 
 	// Check the response content
 	expectedCrypto := CryptoCurrency{
-		ID:     1,         // Last insert ID
-		Name:   "Bitcoin",
-		UpVote: 0,         // Default value for a new cryptocurrency
-		DownVote: 0,       // Default value for a new cryptocurrency
-		TotalVotes: 0,     // Default value for a new cryptocurrency
+		ID:         1, // Last insert ID
+		Name:       "Bitcoin",
+		UpVote:     0, // Default value for a new cryptocurrency
+		DownVote:   0, // Default value for a new cryptocurrency
+		TotalVotes: 0, // Default value for a new cryptocurrency
 	}
 	assert.Equal(t, expectedCrypto, createdCrypto)
 
@@ -168,3 +168,118 @@ func TestCreateCryptoCurrency(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
+func TestVoteCryptoCurrency(t *testing.T) {
+	// Common setup for both upvote and downvote tests
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	cryptoService := NewCryptoCurrencyService(db)
+	cryptoID := 1
+
+	// Set the expectations for the first QueryRow call (count query)
+	rowsCount := sqlmock.NewRows([]string{"count"}).AddRow(1)
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+		WithArgs(cryptoID).
+		WillReturnRows(rowsCount)
+
+	// Set the expectations for the second Exec call (update votes query)
+	result := sqlmock.NewResult(1, 1) // Rows affected: 1
+	mock.ExpectExec("UPDATE crypto_vote SET .* WHERE id = ?").
+		WithArgs(cryptoID).
+		WillReturnResult(result)
+
+	// Set the expectations for the third QueryRow call (get updated cryptocurrency query)
+	rowsCrypto := sqlmock.NewRows([]string{"id", "name", "up_vote", "down_vote", "total_votes"}).
+		AddRow(1, "Bitcoin", 100, 21, 121)
+	mock.ExpectQuery("SELECT id, name, up_vote, down_vote, \\(up_vote \\+ down_vote\\) as total_votes FROM crypto_vote WHERE id=?").
+		WithArgs(cryptoID).
+		WillReturnRows(rowsCrypto)
+
+	t.Run("UpVote", func(t *testing.T) {
+		// Create a new request and recorder for upvote testing
+		req, err := http.NewRequest("PUT", "/v1/cryptovote/"+strconv.Itoa(cryptoID)+"/upvote", nil)
+		assert.NoError(t, err)
+
+		rr := httptest.NewRecorder()
+
+		// Set up the router and call the handler for upvote
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}/upvote", cryptoService.UpVoteCryptoCurrency).Methods("PUT")
+		r.ServeHTTP(rr, req)
+
+		// Check the response status code
+		assert.Equal(t, http.StatusOK, rr.Code)
+
+		// Parse the response body into a CryptoCurrency object
+		var updatedCrypto CryptoCurrency
+		err = json.Unmarshal(rr.Body.Bytes(), &updatedCrypto)
+		assert.NoError(t, err)
+
+		// Check the response content for upvote
+		expectedCrypto := CryptoCurrency{
+			ID:         1,
+			Name:       "Bitcoin",
+			UpVote:     100,
+			DownVote:   21,
+			TotalVotes: 121,
+		}
+		assert.Equal(t, expectedCrypto, updatedCrypto)
+
+		// Check that all the expected SQL queries were executed for upvote
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("DownVote", func(t *testing.T) {
+		// Set the expectations for the first QueryRow call (count query for downvote)
+		rowsCountDownVote := sqlmock.NewRows([]string{"count"}).AddRow(1)
+		mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnRows(rowsCountDownVote)
+	
+		// Set the expectations for the second Exec call (update votes query for downvote)
+		resultDownVote := sqlmock.NewResult(1, 1) // Rows affected: 1
+		mock.ExpectExec("UPDATE crypto_vote SET .* WHERE id = ?").
+			WithArgs(cryptoID).
+			WillReturnResult(resultDownVote)
+	
+		// Set the expectations for the third QueryRow call (get updated cryptocurrency query for downvote)
+		rowsCryptoDownVote := sqlmock.NewRows([]string{"id", "name", "up_vote", "down_vote", "total_votes"}).
+			AddRow(1, "Bitcoin", 100, 21, 121) // Corrected values for downvote
+		mock.ExpectQuery("SELECT id, name, up_vote, down_vote, \\(up_vote \\+ down_vote\\) as total_votes FROM crypto_vote WHERE id=?").
+			WithArgs(cryptoID).
+			WillReturnRows(rowsCryptoDownVote)
+	
+		// Create a new request and recorder for downvote testing
+		req, err := http.NewRequest("PUT", "/v1/cryptovote/"+strconv.Itoa(cryptoID)+"/downvote", nil)
+		assert.NoError(t, err)
+	
+		rr := httptest.NewRecorder()
+	
+		// Set up the router and call the handler for downvote
+		r := mux.NewRouter()
+		r.HandleFunc("/v1/cryptovote/{id:[0-9]+}/downvote", cryptoService.DownVoteCryptoCurrency).Methods("PUT")
+		r.ServeHTTP(rr, req)
+	
+		// Check the response status code
+		assert.Equal(t, http.StatusOK, rr.Code)
+	
+		// Parse the response body into a CryptoCurrency object
+		var updatedCrypto CryptoCurrency
+		err = json.Unmarshal(rr.Body.Bytes(), &updatedCrypto)
+		assert.NoError(t, err)
+	
+		// Check the response content for downvote
+		expectedCryptoDownVote := CryptoCurrency{
+			ID:         1,
+			Name:       "Bitcoin",
+			UpVote:     100,
+			DownVote:   21,
+			TotalVotes: 121,
+		}
+		assert.Equal(t, expectedCryptoDownVote, updatedCrypto)
+	
+		// Check that all the expected SQL queries were executed for downvote
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
