@@ -10,8 +10,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type Database interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Ping() error
+	Close() error
+}
+
 type CryptoCurrencyService struct {
-	db *sql.DB
+	db Database
 }
 
 func NewCryptoCurrencyService(db *sql.DB) *CryptoCurrencyService {
@@ -59,6 +67,20 @@ func (s *CryptoCurrencyService) GetCryptoCurrencyByID(w http.ResponseWriter, r *
 	cryptoID, err := strconv.Atoi(params["id"])
 	if err != nil {
 		http.Error(w, "Invalid cryptocurrency ID", http.StatusBadRequest)
+		return
+	}
+
+	// Check if the cryptocurrency exists in the database
+	var count int
+	err = s.db.QueryRow("SELECT COUNT(*) FROM crypto_vote WHERE id = ?", cryptoID).Scan(&count)
+	if err != nil {
+		log.Println("Error querying database:", err)
+		http.Error(w, "Error getting cryptocurrency", http.StatusInternalServerError)
+		return
+	}
+
+	if count == 0 {
+		http.Error(w, "Cryptocurrency does not exist", http.StatusNotFound)
 		return
 	}
 
