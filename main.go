@@ -7,11 +7,23 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/handlers"
 )
+
+func enableCorsMiddleware(next http.Handler) http.Handler {
+	return handlers.CORS(
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"}),
+		handlers.AllowedHeaders([]string{"Content-Type", "Authorization"}),
+	)(next)
+}
 
 func main() {
 	// Set up for the routes
 	myRouter := mux.NewRouter()
+
+	// Apply CORS middleware
+	myRouter.Use(enableCorsMiddleware)
 
 	// Add API version prefix to the routes
 	apiRouter := myRouter.PathPrefix("/v1").Subrouter()
