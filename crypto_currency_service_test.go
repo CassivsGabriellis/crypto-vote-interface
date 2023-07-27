@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -112,3 +113,58 @@ func TestGetCryptoCurrencyByID(t *testing.T) {
 	// Check that all the expected SQL queries were executed
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestCreateCryptoCurrency(t *testing.T) {
+	// Create a new mock database and expected result
+	db, mock, err := sqlmock.New()
+	assert.NoError(t, err)
+	defer db.Close()
+
+	cryptoService := NewCryptoCurrencyService(db)
+
+	// Mock the database query to check if the cryptocurrency name already exists
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(0)
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM crypto_vote WHERE name = ?").
+		WithArgs("Bitcoin").
+		WillReturnRows(rows)
+
+	// Mock the database insert to create a new cryptocurrency
+	result := sqlmock.NewResult(1, 1) // Last insert ID: 1, Rows affected: 1
+	mock.ExpectExec("INSERT INTO crypto_vote \\(name\\) VALUES \\(\\?\\)").
+		WithArgs("Bitcoin").
+		WillReturnResult(result)
+
+	// Create a new request and recorder for testing the handler
+	jsonData := `{"name": "Bitcoin"}`
+	req, err := http.NewRequest("POST", "/v1/cryptovote", strings.NewReader(jsonData))
+	assert.NoError(t, err)
+
+	rr := httptest.NewRecorder()
+
+	// Set up the router and call the handler
+	r := mux.NewRouter()
+	r.HandleFunc("/v1/cryptovote", cryptoService.CreateCryptoCurrency).Methods("POST")
+	r.ServeHTTP(rr, req)
+
+	// Check the response status code
+	assert.Equal(t, http.StatusCreated, rr.Code)
+
+	// Parse the response body into a CryptoCurrency object
+	var createdCrypto CryptoCurrency
+	err = json.Unmarshal(rr.Body.Bytes(), &createdCrypto)
+	assert.NoError(t, err)
+
+	// Check the response content
+	expectedCrypto := CryptoCurrency{
+		ID:     1,         // Last insert ID
+		Name:   "Bitcoin",
+		UpVote: 0,         // Default value for a new cryptocurrency
+		DownVote: 0,       // Default value for a new cryptocurrency
+		TotalVotes: 0,     // Default value for a new cryptocurrency
+	}
+	assert.Equal(t, expectedCrypto, createdCrypto)
+
+	// Check that all the expected SQL queries were executed
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
