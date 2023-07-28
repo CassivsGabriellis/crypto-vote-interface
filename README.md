@@ -2,19 +2,40 @@
 
 This is a simple RESTful API implementation for managing cryptocurrencies using MySQL as the database, by which allows users to perform various operations, such as fetching all the most well known cryptocurrencies available, getting a cryptocurrency by ID, creating a new cryptocurrency, upvoting or downvoting a cryptocurrency, and deleting a cryptocurrency.
 
+## Table of Contents
+- [Components](#components)
+- [Database Schema](#database-schema)
+- [Endpoints Specification](#endpoints-specification)
+
+## Components
+
 Here's a brief summary of the main components in the code:
 
-**go.sum and go.mod**: These files specify the dependencies of the project along with their versions.
+- **go.sum and go.mod**: These files specify the dependencies of the project along with their versions.
 
-**main.go**: This is the main entry point of the application. It sets up the server, initializes the database, and registers the API endpoints for handling different requests.
+- **main.go**: This is the main entry point of the application. It sets up the server, initializes the database, and registers the API endpoints for handling different requests.
 
-**database.go**: This file contains the logic to initialize the database connection. It uses the "github.com/go-sql-driver/mysql" package to connect to a MySQL database.
+- **database.go**: This file contains the logic to initialize the database connection. It uses the "github.com/go-sql-driver/mysql" package to connect to a MySQL database.
 
-**crypto_currency_model.go**: This file defines the CryptoCurrency struct, which represents the structure of a cryptocurrency entry.
+- **crypto_currency_model.go**: This file defines the CryptoCurrency struct, which represents the structure of a cryptocurrency entry.
 
-**crypto_currency_service.go**: This file contains the main business logic for handling various API requests related to cryptocurrencies. It implements the CRUD (Create, Read, Update, Delete) operations for cryptocurrencies and interacts with the database to perform these operations.
+- **crypto_currency_service.go**: This file contains the main business logic for handling various API requests related to cryptocurrencies. It implements the CRUD (Create, Read, Update, Delete) operations for cryptocurrencies and interacts with the database to perform these operations.
 
-**crypto_currency_service_test.go**: This file contains unit tests for the CryptoCurrencyService methods. It uses the "github.com/DATA-DOG/go-sqlmock" package to mock the database and test the service's functionality.
+- **crypto_currency_service_test.go**: This file contains unit tests for the CryptoCurrencyService methods. It uses the [go-sqlmock](github.com/DATA-DOG/go-sqlmock) package to mock the database and test the service's functionality.
+
+## Database Schema
+
+The MySQL database schema for the Crypto Vote API is as follows:
+
+```
+Field        | Type         | Null | Key | Default          | Extra
+-------------------------------------------------------------------------
+id           | int          | NO   | PRI | NULL             | auto_increment
+name         | varchar(255) | NO   |     | NULL             |
+up_vote      | int          | YES  |     | 0                |
+down_vote    | int          | YES  |     | 0                |
+total_votes  | int          | YES  |     | 0                |
+```
 
 ## Endpoints specification
 
@@ -124,4 +145,4 @@ Replace {id} with the desired cryptocurrency ID:
 curl -X DELETE http://localhost:8000/v1/cryptovote/{id}
 ```
 
-Remember to replace localhost:8000 with the actual address and port where your server is running. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the -d parameter.
+Remember to replace `localhost:8000` with the actual address and port where your server is running. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the `-d` parameter.
