@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/handlers"
 )
 
+// CORS middleware implementation
 func enableCorsMiddleware(next http.Handler) http.Handler {
 	return handlers.CORS(
 		handlers.AllowedOrigins([]string{"*"}),
@@ -47,12 +48,12 @@ func main() {
 	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
 
 	// Start the server
-	serverPort := os.Getenv("SERVER_PORT")
-	if serverPort == "" {
-		serverPort = "8000" // Default port if not set in environment variable
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default port if not set in environment variable
 	}
 
-	serverAddress := fmt.Sprintf(":%s", serverPort)
+	serverAddress := fmt.Sprintf(":%s", port)
 	log.Println("Server listening on", serverAddress)
 	log.Fatal(http.ListenAndServe(serverAddress, myRouter))
 }
