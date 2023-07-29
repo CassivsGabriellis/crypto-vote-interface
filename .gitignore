@@ -1,5 +1,2 @@
 #.env file
 *.env*
-
-#yaml
-app.yaml
