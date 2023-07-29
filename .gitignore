@@ -3,6 +3,3 @@
 
 #yaml
 app.yaml
-
-.dockerignore
-fly.toml

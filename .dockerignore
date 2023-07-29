@@ -1,6 +1,0 @@
-# flyctl launch added from .gitignore
-#.env file
-
-#yaml
-**\app.yaml
-fly.toml
