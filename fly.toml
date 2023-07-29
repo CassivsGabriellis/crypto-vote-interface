@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for crypto-vote-api on 2023-07-28T17:23:01-03:00
+# fly.toml app configuration file generated for muddy-sunset-3203 on 2023-07-28T18:02:07-03:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = "crypto-vote-api"
+app = "muddy-sunset-3203"
 primary_region = "gru"
 
 [build]
