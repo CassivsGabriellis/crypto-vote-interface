@@ -54,6 +54,5 @@ func main() {
 	}
 
 	serverAddress := fmt.Sprintf(":%s", port)
-	log.Println("Server listening on", serverAddress)
 	log.Fatal(http.ListenAndServe(serverAddress, myRouter))
 }
