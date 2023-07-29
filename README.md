@@ -102,7 +102,7 @@ Here are some examples of using `curl` to interact with the endpoints:
 - **Get All Crypto Currencies:**
 
 ```bash
-curl -X GET http://localhost:8000/v1/cryptovote
+curl -X GET http://localhost:8080/v1/cryptovote
 ```
 
 - **Get Crypto Currency by ID** 
@@ -110,7 +110,7 @@ curl -X GET http://localhost:8000/v1/cryptovote
 Replace {id} with the desired cryptocurrency ID:
 
 ```bash
-curl -X GET http://localhost:8000/v1/cryptovote/{id}
+curl -X GET http://localhost:8080/v1/cryptovote/{id}
 ```
 
 - **Create Crypto Currency**
@@ -118,7 +118,7 @@ curl -X GET http://localhost:8000/v1/cryptovote/{id}
 Replace {"name": "Bitcoin"} with the desired cryptocurrency data:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"name": "Bitcoin"}' http://localhost:8000/v1/cryptovote
+curl -X POST -H "Content-Type: application/json" -d '{"name": "Bitcoin"}' http://localhost:8080/v1/cryptovote
 ```
 
 - **Up Vote Crypto Currency**
@@ -126,7 +126,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"name": "Bitcoin"}' http:/
 Replace {id} with the desired cryptocurrency ID:
 
 ```bash
-curl -X PUT http://localhost:8000/v1/cryptovote/{id}/upvote
+curl -X PUT http://localhost:8080/v1/cryptovote/{id}/upvote
 ```
 
 - **Down Vote Crypto Currency**
@@ -134,7 +134,7 @@ curl -X PUT http://localhost:8000/v1/cryptovote/{id}/upvote
 Replace {id} with the desired cryptocurrency ID:
 
 ```bash
-curl -X PUT http://localhost:8000/v1/cryptovote/{id}/downvote
+curl -X PUT http://localhost:8080/v1/cryptovote/{id}/downvote
 ```
 
 - **Delete Crypto Currency**
@@ -142,7 +142,7 @@ curl -X PUT http://localhost:8000/v1/cryptovote/{id}/downvote
 Replace {id} with the desired cryptocurrency ID:
 
 ```bash
-curl -X DELETE http://localhost:8000/v1/cryptovote/{id}
+curl -X DELETE http://localhost:8080/v1/cryptovote/{id}
 ```
 
-Remember to replace `localhost:8000` with the actual address and port where your server is running. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the `-d` parameter.
+Remember to replace `localhost:8080` with the actual address and port where your server is running. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the `-d` parameter.
