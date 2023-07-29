@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -53,6 +52,5 @@ func main() {
 		port = "8080" // Default port if not set in environment variable
 	}
 
-	serverAddress := fmt.Sprintf(":%s", port)
-	log.Fatal(http.ListenAndServe(serverAddress, myRouter))
+	log.Fatal(http.ListenAndServe(port, myRouter))
 }
