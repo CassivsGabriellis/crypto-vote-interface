@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/handlers"
+	"github.com/joho/godotenv"
 )
 
 // CORS middleware implementation
@@ -19,6 +20,12 @@ func enableCorsMiddleware(next http.Handler) http.Handler {
 }
 
 func main() {
+	// Load .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	// Set up for the routes
 	myRouter := mux.NewRouter()
 
@@ -46,11 +53,5 @@ func main() {
 	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}/downvote", cryptoService.DownVoteCryptoCurrency).Methods("PUT")
 	apiRouter.HandleFunc("/cryptovote/{id:[0-9]+}", cryptoService.DeleteCryptoCurrency).Methods("DELETE")
 
-	// Start the server
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080" // Default port if not set in environment variable
-	}
-
-	log.Fatal(http.ListenAndServe(port, myRouter))
+	log.Fatal(http.ListenAndServe("8080", myRouter))
 }
