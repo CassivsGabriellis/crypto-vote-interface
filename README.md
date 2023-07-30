@@ -6,6 +6,7 @@ This is a simple RESTful API implementation for managing cryptocurrencies using 
 - [Components](#components)
 - [Database Schema](#database-schema)
 - [Endpoints Specification](#endpoints-specification)
+- [API Start and Usage](#api-start-and-usage)
 
 ## Components
 
@@ -91,7 +92,31 @@ Below are the available endpoints and their functionalities:
 
 - Response: If the cryptocurrency is successfully deleted, the response will have a status code of 204 (No Content) with an empty body.
 
-### API Usage
+### API Start and Usage
+
+To start the Crypto Vote API, follow these steps:
+
+1. Make sure you have Go (Golang) and MySQL installed on your system.
+
+2. Clone the repository or download the source code.
+
+3. Navigate to the project directory.
+
+4. Install the project dependencies by running the following command:
+
+```go
+go mod download
+```
+
+5. Set up the MySQL database and configure the connection details in the `database.go` file.
+
+6. Run the following command to start the server:
+
+```go
+go run .
+```
+
+**The server will start running on http://localhost:8080**.
 
 To use these endpoints, you can make HTTP requests to the server hosting the crypto-vote application. 
 
@@ -145,4 +170,4 @@ Replace {id} with the desired cryptocurrency ID:
 curl -X DELETE http://localhost:8080/v1/cryptovote/{id}
 ```
 
-Remember to replace `localhost:8080` with the actual address and port where your server is running. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the `-d` parameter.
+Remember to replace `localhost:8080` with the actual address and port you want your server to run. Additionally, for endpoints that require a request body (e.g., creating a cryptocurrency), make sure to provide valid JSON data in the `-d` parameter.
