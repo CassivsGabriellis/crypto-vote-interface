@@ -31,8 +31,8 @@ The MySQL database schema for the Crypto Vote API is as follows:
 ```
 Field        | Type         | Null | Key | Default          | Extra
 -------------------------------------------------------------------------
-id           | int          | NO   | PRI | NULL             | auto_increment
-name         | varchar(255) | NO   |     | NULL             |
+id           | int          | NO   | PRI | NOT NULL         | auto_increment
+name         | varchar(255) | NO   |     | NOT NULL         |
 up_vote      | int          | YES  |     | 0                |
 down_vote    | int          | YES  |     | 0                |
 total_votes  | int          | YES  |     | 0                |
